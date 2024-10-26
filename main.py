@@ -18,8 +18,7 @@ from flcore.servers.serverltm import FedLtm
 
 # Model-splitting-based FL
 
-# 这个用不了
-from flcore.servers.serverscaffold import SCAFFOLD
+
 from flcore.servers.serverprox import FedProx
 from flcore.servers.serverkd import FedKD
 from flcore.servers.serverDynaFed import DynaFed
@@ -27,14 +26,9 @@ from flcore.servers.serverdistill import FedDistill
 from flcore.servers.servermoon import MOON
 # Knowledge-distillation-based FL
 from flcore.servers.servergen import FedGen
-from flcore.servers.serverftg import FedFTG
-from flcore.servers.servertgp import FedTGP
+
 from flcore.servers.serverproto import FedProto
 from flcore.servers.servergkd import FedGKD
-from flcore.servers.serverfd import FedFD
-
-from flcore.servers.serverfac import FedAC # ############################
-# Knowledge-distillation-based pFL
 
 
 from flcore.trainmodel.models import *
@@ -45,14 +39,11 @@ from utils.result_utils import average_data
 from utils.mem_utils import MemReporter
 from utils.utils import ParamDiffAug
 logger = logging.getLogger()
-# 创建一个日志记录器对象logger,logging.getLogger()返回一个默认的根记录器对象，用于处理日志消息
+
 logger.setLevel(logging.ERROR)
-#  设置日志记录器的日志级别为ERROR。这意味着只有ERROR级别的日志消息会被记录，其他级别的日志消息将被忽略。
-#  这样可以控制日志记录的详细程度，只记录重要的错误信息。
 
 warnings.simplefilter("ignore")
-# 设置警告过滤器，将警告信息忽略掉。通过这行代码，警告消息将不会被显示或打印出来。
-# 警告通常用于指示潜在问题或不推荐使用的代码，但有时可能会干扰到程序的执行。
+
 torch.manual_seed(0)
 
 
@@ -81,10 +72,10 @@ imsize_dict = {
 def run(args):
 
     time_list = []
-    reporter = MemReporter() # 内存报报告器
+    reporter = MemReporter() 
     model_str = args.model
 
-    for i in range(args.prev, args.times): # 其实就是训练几轮的意思
+    for i in range(args.prev, args.times): 
         print(f"\n============= Running time: {i}th =============")
         print("Creating server and clients ...")
         start = time.time()
@@ -92,7 +83,7 @@ def run(args):
         if model_str == "resnet":
             # args.model = torchvision.models.resnet18(pretrained=False, num_classes=args.num_classes).to(args.device)
 
-            '''args.model = torchvision.models.resnet18(pretrained=True).to(args.device)  # fedgkd使用resnet8
+            '''args.model = torchvision.models.resnet18(pretrained=True).to(args.device) 
             feature_dim = list(args.model.fc.parameters())[0].shape[1]
             args.model.fc = nn.Linear(feature_dim, args.num_classes).to(args.device)'''
 
@@ -150,7 +141,7 @@ def run(args):
 
         elif args.algorithm == "FedGen":
             args.head = copy.deepcopy(args.model.fc)# Linear(in_features=512, out_features=10, bias=True)
-            args.model.fc = nn.Identity()# 样做是为了将模型的最后一层全连接层（或称为头部）替换为一个恒等映射，从而将模型的输出直接作为特征表示，而不进行额外的变换或预测。
+            args.model.fc = nn.Identity()
             args.model = BaseHeadSplit(args.model, args.head)
             server = FedGen(args, i)
 
@@ -180,7 +171,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     # general
-    parser.add_argument('-alpha', "--alpha", type=float, default=0.1, help="non-iid程度，越小代表异构程度越高，但是0代表iid")
+    parser.add_argument('-alpha', "--alpha", type=float, default=0.1, help="non-iid")
     parser.add_argument('-go', "--goal", type=str, default="test",
                         help="The goal for this experiment")
     parser.add_argument('-dev', "--device", type=str, default="cuda",
@@ -236,10 +227,10 @@ if __name__ == "__main__":
     # parser.add_argument('-nd', "--noise_dim", type=int, default=256)
     parser.add_argument('-glr', "--generator_learning_rate", type=float, default=1e-4)
     # parser.add_argument('-hd', "--hidden_dim", type=int, default=8192)
-    # parser.add_argument('-se', "--server_epochs", type=int, default=10)  # 这个是在服务器里训练生成器的epoch
+    # parser.add_argument('-se', "--server_epochs", type=int, default=10) 
     parser.add_argument('-lf', "--localize_feature_extractor", type=bool,
-                        default=False)  # 这个参数用来控制特征提取器是否上传到服务器里，False代表上传，True代表不上传，只在本地更新
-    # parser.add_argument('-fcd', "--fc_dim", type=int, default=4096,help="对于FedGen/FedFTG/FedMAD的生成器对于噪音和y的全连接层输出维度")
+                        default=False)  
+    # parser.add_argument('-fcd', "--fc_dim", type=int, default=4096,help="")
 
     # FedGKD
     parser.add_argument('-buffer_length', "--buffer_length", type=int, default=5)
@@ -254,11 +245,11 @@ if __name__ == "__main__":
 
 
 
-    # practical，模拟真实场景
+    # practical
     parser.add_argument('-cdr', "--client_drop_rate", type=float, default=0.0,
-                        help="The dropout rate for total clients. 被选中的客户将在每一轮培训中随机退出")
+                        help="The dropout rate for total clients. ")
     parser.add_argument('-tsr', "--train_slow_rate", type=float, default=0.0,
-                        help="The rate for slow clients when training locally.一旦一个客户被选为“slow trainers”，它就会比原来的训练器训练得慢")
+                        help="The rate for slow clients when training locally.“slow trainers”，")
     parser.add_argument('-ssr', "--send_slow_rate", type=float, default=0.0,
                         help="The rate for slow clients when sending global model")
     parser.add_argument('-ts', "--time_select", type=bool, default=False,
